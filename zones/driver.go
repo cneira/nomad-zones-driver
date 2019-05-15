@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"fmt"
-	"git.wegmueller.it/illumos/go-zone"
-	"git.wegmueller.it/illumos/go-zone/config"
+	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/client/stats"
@@ -15,12 +13,11 @@ import (
 	"github.com/hashicorp/nomad/plugins/base"
 	"github.com/hashicorp/nomad/plugins/drivers"
 	"github.com/hashicorp/nomad/plugins/shared/hclspec"
-	pstructs "github.com/hashicorp/nomad/plugins/shared/structs"
 )
 
 const (
 	// pluginName is the name of the plugin
-	pluginName = "Zones"
+	pluginName = "zone"
 
 	// fingerprintPeriod is the interval at which the driver will send fingerprint responses
 	fingerprintPeriod = 30 * time.Second
@@ -42,15 +39,20 @@ var (
 	// configSpec is the hcl specification returned by the ConfigSchema RPC
 	configSpec = hclspec.NewObject(map[string]*hclspec.Spec{
 		"Zonepath": hclspec.NewAttr("zonepath", "string", false),
+		"enabled": hclspec.NewDefault(
+
+			hclspec.NewAttr("enabled", "bool", false),
+
+			hclspec.NewLiteral("true"),
+		),
 	})
 
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
 	taskConfigSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Name":     hclspec.NewAttr("name", "string", true),
+		"Name":     hclspec.NewAttr("Name", "string", true),
 		"Autoboot": hclspec.NewAttr("Autoboot", "string", false),
-		"Brand":    hclspec.NewAttr("brand", "string", false),
-
+		"Brand":    hclspec.NewAttr("Brand", "string", false),
 	})
 
 	// capabilities is returned by the Capabilities RPC and indicates what
@@ -90,15 +92,15 @@ type Driver struct {
 
 // Config is the driver configuration set by the SetConfig RPC call
 type Config struct {
-	ZonePath string `codec:"Zonepath"`
+	Zonepath string `codec:"Zonepath"`
+	Enabled  bool   `codec:"enabled"`
 }
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Name            string   `codec:"Name"`
-	Autoboot        string   `codec:"Autoboot"`
-	Brand           bool     `codec:"Brand"`
-
+	Name     string `codec:"Name"`
+	Autoboot string `codec:"Autoboot"`
+	Brand    string `codec:"Brand"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
@@ -109,7 +111,6 @@ type TaskState struct {
 	ContainerName string
 	StartedAt     time.Time
 }
-
 
 func NewZoneDriver(logger hclog.Logger) drivers.DriverPlugin {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -186,23 +187,16 @@ func (d *Driver) handleFingerprint(ctx context.Context, ch chan<- *drivers.Finge
 func (d *Driver) buildFingerprint() *drivers.Fingerprint {
 	var health drivers.HealthState
 	var desc string
-	attrs := map[string]*pstructs.Attribute{}
 
 	if d.config.Enabled {
 		health = drivers.HealthStateHealthy
 		desc = "ready"
-		attrs["driver.zone"] = pstructs.NewBoolAttribute(true)
 	} else {
 		health = drivers.HealthStateUndetected
 		desc = "disabled"
 	}
 
-	if d.config.AllowVolumes {
-		attrs["driver.lxc.volumes.enabled"] = pstructs.NewBoolAttribute(true)
-	}
-
 	return &drivers.Fingerprint{
-		Attributes:        attrs,
 		Health:            health,
 		HealthDescription: desc,
 	}
@@ -221,16 +215,11 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	if err := handle.GetDriverState(&taskState); err != nil {
 		return fmt.Errorf("failed to decode task state from handle: %v", err)
 	}
-	//TODO: 
-	c, err :=  mkZone(taskState.ContainerName, d.Zonepath())
-	if err != nil {
-		return fmt.Errorf("failed to create container ref: %v", err)
-	}
+	//TODO:
+	c := zconfig.New(taskState.ContainerName)
 
-	initPid := c.InitPid()
 	h := &taskHandle{
 		container:  c,
-		initPid:    initPid,
 		taskConfig: taskState.TaskConfig,
 		procState:  drivers.TaskStateRunning,
 		startedAt:  taskState.StartedAt,
@@ -258,51 +247,29 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		return nil, nil, fmt.Errorf("failed to decode driver config: %v", err)
 	}
 
-	d.logger.Info("starting lxc task", "driver_cfg", hclog.Fmt("%+v", driverConfig))
+	d.logger.Info("starting zone task", "driver_cfg", hclog.Fmt("%+v", driverConfig))
 	handle := drivers.NewTaskHandle(taskHandleVersion)
 	handle.Config = cfg
 
-	c, err := d.initializeContainer(cfg, driverConfig)
+	z := d.initializeContainer(cfg, driverConfig)
+	if err := z.WriteToFile(); err != nil {
+		return nil, nil, fmt.Errorf("Cannot write file", cfg.ID)
+	}
+	if err := zconfig.Register(z); err != nil {
+		zconfig.Unregister(z)
+		z.RemoveFile()
+		return nil, nil, fmt.Errorf("Cannot Register", cfg.ID)
+	}
+	mgr, err := lifecycle.NewManager(z)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("Cannot create mgr", cfg.ID)
 	}
-
-	opt := toLXCCreateOptions(driverConfig)
-	if err := c.Create(opt); err != nil {
-		return nil, nil, fmt.Errorf("unable to create container: %v", err)
+	if err = mgr.Install(nil); err != nil {
+		return nil, nil, fmt.Errorf("Cannot install zone", cfg.ID)
 	}
-
-	cleanup := func() {
-		if err := c.Destroy(); err != nil {
-			d.logger.Error("failed to clean up from an error in Start", "error", err)
-		}
-	}
-
-	if err := d.configureContainerNetwork(c); err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-
-	if err := d.mountVolumes(c, cfg, driverConfig); err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-
-	if err := c.Start(); err != nil {
-		cleanup()
-		return nil, nil, fmt.Errorf("unable to start container: %v", err)
-	}
-
-	if err := d.setResourceLimits(c, cfg); err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-
-	pid := c.InitPid()
 
 	h := &taskHandle{
-		container:  c,
-		initPid:    pid,
+		container:  z,
 		taskConfig: cfg,
 		procState:  drivers.TaskStateRunning,
 		startedAt:  time.Now().Round(time.Millisecond),
@@ -314,14 +281,14 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	}
 
 	driverState := TaskState{
-		ContainerName: c.Name(),
+		ContainerName: z.Name,
 		TaskConfig:    cfg,
 		StartedAt:     h.startedAt,
 	}
 
 	if err := handle.SetDriverState(&driverState); err != nil {
 		d.logger.Error("failed to start task, error setting driver state", "error", err)
-		cleanup()
+
 		return nil, nil, fmt.Errorf("failed to set driver state: %v", err)
 	}
 
@@ -347,15 +314,6 @@ func (d *Driver) WaitTask(ctx context.Context, taskID string) (<-chan *drivers.E
 func (d *Driver) handleWait(ctx context.Context, handle *taskHandle, ch chan *drivers.ExitResult) {
 	defer close(ch)
 
-	//
-	// Wait for process completion by polling status from handler.
-	// We cannot use the following alternatives:
-	//   * Process.Wait() requires LXC container processes to be children
-	//     of self process; but LXC runs container in separate PID hierarchy
-	//     owned by PID 1.
-	//   * lxc.Container.Wait() holds a write lock on container and prevents
-	//     any other calls, including stats.
-	//
 	// Going with simplest approach of polling for handler to mark exit.
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()

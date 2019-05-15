@@ -1,4 +1,4 @@
-package zones
+package zone
 
 import (
 	"sync"
