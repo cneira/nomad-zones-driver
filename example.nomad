@@ -10,12 +10,12 @@ job "test-zone" {
   }
 
 
-    task "test00" {
+    task "test01" {
       driver = "zone"
 	config {
-		Name = "zone02",
+		Zonepath = "/zcage/vms",
 		Autoboot = false,
-		Brand = "pkgsrc"
+		Brand = "sparse"
 	}
 }
 }

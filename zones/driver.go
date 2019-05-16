@@ -38,11 +38,8 @@ var (
 
 	// configSpec is the hcl specification returned by the ConfigSchema RPC
 	configSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Zonepath": hclspec.NewAttr("zonepath", "string", false),
 		"enabled": hclspec.NewDefault(
-
 			hclspec.NewAttr("enabled", "bool", false),
-
 			hclspec.NewLiteral("true"),
 		),
 	})
@@ -50,9 +47,9 @@ var (
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
 	taskConfigSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Name":     hclspec.NewAttr("Name", "string", true),
 		"Autoboot": hclspec.NewAttr("Autoboot", "string", false),
 		"Brand":    hclspec.NewAttr("Brand", "string", false),
+		"Zonepath": hclspec.NewAttr("Zonepath", "string", true),
 	})
 
 	// capabilities is returned by the Capabilities RPC and indicates what
@@ -92,15 +89,14 @@ type Driver struct {
 
 // Config is the driver configuration set by the SetConfig RPC call
 type Config struct {
-	Zonepath string `codec:"Zonepath"`
-	Enabled  bool   `codec:"enabled"`
+	Enabled bool `codec:"enabled"`
 }
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Name     string `codec:"Name"`
 	Autoboot string `codec:"Autoboot"`
 	Brand    string `codec:"Brand"`
+	Zonepath string `codec:"Zonepath"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
@@ -258,7 +254,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err := zconfig.Register(z); err != nil {
 		zconfig.Unregister(z)
 		z.RemoveFile()
-		return nil, nil, fmt.Errorf("Cannot Register %q", cfg.ID)
+		return nil, nil, fmt.Errorf("Cannot Register %q, err=%+v", cfg.ID, err)
 	}
 	mgr, err := lifecycle.NewManager(z)
 	if err != nil {
@@ -271,7 +267,6 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err = mgr.Boot(nil); err != nil {
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
-
 
 	h := &taskHandle{
 		container:  z,
