@@ -10,12 +10,12 @@ job "test-zone" {
   }
 
 
-    task "zone-test" {
+    task "test00" {
       driver = "zone"
 	config {
-		Name = "zone00",
+		Name = "zone02",
 		Autoboot = false,
-		Brand = "lipkg"
+		Brand = "pkgsrc"
 	}
 }
 }

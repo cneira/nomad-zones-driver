@@ -6,6 +6,7 @@ client {
   options = {
     "driver.whitelist" = "zone"
   }
+     "cpu_total_compute" = 2813
 }
 
 #acl {

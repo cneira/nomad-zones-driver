@@ -253,20 +253,25 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 
 	z := d.initializeContainer(cfg, driverConfig)
 	if err := z.WriteToFile(); err != nil {
-		return nil, nil, fmt.Errorf("Cannot write file", cfg.ID)
+		return nil, nil, fmt.Errorf("Cannot write file %q", cfg.ID)
 	}
 	if err := zconfig.Register(z); err != nil {
 		zconfig.Unregister(z)
 		z.RemoveFile()
-		return nil, nil, fmt.Errorf("Cannot Register", cfg.ID)
+		return nil, nil, fmt.Errorf("Cannot Register %q", cfg.ID)
 	}
 	mgr, err := lifecycle.NewManager(z)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Cannot create mgr", cfg.ID)
+		return nil, nil, fmt.Errorf("Cannot create mgr %q", cfg.ID)
 	}
 	if err = mgr.Install(nil); err != nil {
-		return nil, nil, fmt.Errorf("Cannot install zone", cfg.ID)
+		return nil, nil, fmt.Errorf("Cannot install zone %q, err= %+v", cfg.ID, err)
 	}
+
+	if err = mgr.Boot(nil); err != nil {
+		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
+	}
+
 
 	h := &taskHandle{
 		container:  z,
