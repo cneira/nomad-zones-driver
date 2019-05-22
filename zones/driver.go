@@ -8,6 +8,7 @@ import (
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
+	pstructs "github.com/hashicorp/nomad/plugins/shared/structs"
 	"github.com/hashicorp/nomad/client/stats"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
 	"github.com/hashicorp/nomad/plugins/base"
@@ -36,13 +37,6 @@ var (
 		Name:              pluginName,
 	}
 
-	// configSpec is the hcl specification returned by the ConfigSchema RPC
-	configSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"enabled": hclspec.NewDefault(
-			hclspec.NewAttr("enabled", "bool", false),
-			hclspec.NewLiteral("true"),
-		),
-	})
 
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
@@ -89,7 +83,7 @@ type Driver struct {
 
 // Config is the driver configuration set by the SetConfig RPC call
 type Config struct {
-	Enabled bool `codec:"enabled"`
+
 }
 
 // TaskConfig is the driver configuration of a task within a job
@@ -126,7 +120,7 @@ func (d *Driver) PluginInfo() (*base.PluginInfoResponse, error) {
 }
 
 func (d *Driver) ConfigSchema() (*hclspec.Spec, error) {
-	return configSpec, nil
+	return nil, nil
 }
 
 func (d *Driver) SetConfig(cfg *base.Config) error {
@@ -183,16 +177,12 @@ func (d *Driver) handleFingerprint(ctx context.Context, ch chan<- *drivers.Finge
 func (d *Driver) buildFingerprint() *drivers.Fingerprint {
 	var health drivers.HealthState
 	var desc string
-
-	if d.config.Enabled {
-		health = drivers.HealthStateHealthy
-		desc = "ready"
-	} else {
-		health = drivers.HealthStateUndetected
-		desc = "disabled"
-	}
-
+	attrs := map[string]*pstructs.Attribute{"driver.zone": pstructs.NewStringAttribute("1")}
+	health = drivers.HealthStateHealthy
+	desc = "ready"
+	d.logger.Info("buildFingerprint()", "driver.FingerPrint", hclog.Fmt("%+v", health))
 	return &drivers.Fingerprint{
+		Attributes:        attrs,
 		Health:            health,
 		HealthDescription: desc,
 	}
@@ -211,11 +201,20 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	if err := handle.GetDriverState(&taskState); err != nil {
 		return fmt.Errorf("failed to decode task state from handle: %v", err)
 	}
-	//TODO:
-	c := zconfig.New(taskState.ContainerName)
+
+	z := zconfig.New(taskState.ContainerName)
+
+	mgr, err := lifecycle.NewManager(z)
+	if err != nil {
+		return  fmt.Errorf("Cannot create mgr %v", err)
+	}
+
+	if err = mgr.Reboot(nil); err != nil {
+		return fmt.Errorf("Cannot Reboot zone err= %+v", err)
+	}
 
 	h := &taskHandle{
-		container:  c,
+		container:  z,
 		taskConfig: taskState.TaskConfig,
 		procState:  drivers.TaskStateRunning,
 		startedAt:  taskState.StartedAt,
@@ -234,6 +233,7 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 }
 
 func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drivers.DriverNetwork, error) {
+	
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
@@ -288,7 +288,6 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 
 	if err := handle.SetDriverState(&driverState); err != nil {
 		d.logger.Error("failed to start task, error setting driver state", "error", err)
-
 		return nil, nil, fmt.Errorf("failed to set driver state: %v", err)
 	}
 
@@ -369,6 +368,7 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 
 func (d *Driver) InspectTask(taskID string) (*drivers.TaskStatus, error) {
 	handle, ok := d.tasks.Get(taskID)
+	
 	if !ok {
 		return nil, drivers.ErrTaskNotFound
 	}

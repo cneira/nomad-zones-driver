@@ -32,16 +32,10 @@ type taskHandle struct {
 	exitResult  *drivers.ExitResult
 }
 
-var (
-	LXCMeasuredCpuStats = []string{"System Mode", "User Mode", "Percent"}
-
-	LXCMeasuredMemStats = []string{"RSS", "Cache", "Swap", "Max Usage", "Kernel Usage", "Kernel Max Usage"}
-)
-
 func (h *taskHandle) TaskStatus() *drivers.TaskStatus {
 	h.stateLock.RLock()
 	defer h.stateLock.RUnlock()
-
+	h.logger.Error("************returning State********","DEBUG",h.procState)
 	return &drivers.TaskStatus{
 		ID:          h.taskConfig.ID,
 		Name:        h.taskConfig.Name,
@@ -73,13 +67,10 @@ func (h *taskHandle) run() {
 	h.exitResult.Signal = 0
 	h.completedAt = time.Now()
 
-	// TODO: detect if the task OOMed
 }
 
 func (h *taskHandle) stats(ctx context.Context, interval time.Duration) (<-chan *drivers.TaskResourceUsage, error) {
-	ch := make(chan *drivers.TaskResourceUsage)
-	go h.handleStats(ctx, ch, interval)
-	return ch, nil
+	return nil, nil
 }
 
 func (h *taskHandle) handleStats(ctx context.Context, ch chan *drivers.TaskResourceUsage, interval time.Duration) {
