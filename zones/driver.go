@@ -8,12 +8,11 @@ import (
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
-	pstructs "github.com/hashicorp/nomad/plugins/shared/structs"
-	"github.com/hashicorp/nomad/client/stats"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
 	"github.com/hashicorp/nomad/plugins/base"
 	"github.com/hashicorp/nomad/plugins/drivers"
 	"github.com/hashicorp/nomad/plugins/shared/hclspec"
+	pstructs "github.com/hashicorp/nomad/plugins/shared/structs"
 )
 
 const (
@@ -36,7 +35,6 @@ var (
 		PluginVersion:     "0.1.1-dev",
 		Name:              pluginName,
 	}
-
 
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
@@ -83,7 +81,6 @@ type Driver struct {
 
 // Config is the driver configuration set by the SetConfig RPC call
 type Config struct {
-
 }
 
 // TaskConfig is the driver configuration of a task within a job
@@ -206,7 +203,7 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 
 	mgr, err := lifecycle.NewManager(z)
 	if err != nil {
-		return  fmt.Errorf("Cannot create mgr %v", err)
+		return fmt.Errorf("Cannot create mgr %v", err)
 	}
 
 	if err = mgr.Reboot(nil); err != nil {
@@ -216,24 +213,19 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	h := &taskHandle{
 		container:  z,
 		taskConfig: taskState.TaskConfig,
-		procState:  drivers.TaskStateRunning,
+		State:  drivers.TaskStateRunning,
 		startedAt:  taskState.StartedAt,
 		exitResult: &drivers.ExitResult{},
 		logger:     d.logger,
-
-		totalCpuStats:  stats.NewCpuStats(),
-		userCpuStats:   stats.NewCpuStats(),
-		systemCpuStats: stats.NewCpuStats(),
 	}
 
 	d.tasks.Set(taskState.TaskConfig.ID, h)
-
 	go h.run()
 	return nil
 }
 
 func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drivers.DriverNetwork, error) {
-	
+
 	if _, ok := d.tasks.Get(cfg.ID); ok {
 		return nil, nil, fmt.Errorf("task with ID %q already started", cfg.ID)
 	}
@@ -271,13 +263,9 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	h := &taskHandle{
 		container:  z,
 		taskConfig: cfg,
-		procState:  drivers.TaskStateRunning,
+		State:  drivers.TaskStateRunning,
 		startedAt:  time.Now().Round(time.Millisecond),
 		logger:     d.logger,
-
-		totalCpuStats:  stats.NewCpuStats(),
-		userCpuStats:   stats.NewCpuStats(),
-		systemCpuStats: stats.NewCpuStats(),
 	}
 
 	driverState := TaskState{
@@ -368,7 +356,7 @@ func (d *Driver) DestroyTask(taskID string, force bool) error {
 
 func (d *Driver) InspectTask(taskID string) (*drivers.TaskStatus, error) {
 	handle, ok := d.tasks.Get(taskID)
-	
+
 	if !ok {
 		return nil, drivers.ErrTaskNotFound
 	}

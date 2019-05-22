@@ -9,24 +9,22 @@ import (
 	"time"
 
 	hclog "github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/stats"
 	"github.com/hashicorp/nomad/plugins/drivers"
 	"git.wegmueller.it/illumos/go-zone/config"
+	"git.wegmueller.it/illumos/go-zone/lifecycle"
+	zconfig "git.wegmueller.it/illumos/go-zone/config"
 )
 
 type taskHandle struct {
 	container *config.Zone
 	logger    hclog.Logger
 
-	totalCpuStats  *stats.CpuStats
-	userCpuStats   *stats.CpuStats
-	systemCpuStats *stats.CpuStats
 
 	// stateLock syncs access to all fields below
 	stateLock sync.RWMutex
 
 	taskConfig  *drivers.TaskConfig
-	procState   drivers.TaskState
+	State   drivers.TaskState
 	startedAt   time.Time
 	completedAt time.Time
 	exitResult  *drivers.ExitResult
@@ -35,11 +33,11 @@ type taskHandle struct {
 func (h *taskHandle) TaskStatus() *drivers.TaskStatus {
 	h.stateLock.RLock()
 	defer h.stateLock.RUnlock()
-	h.logger.Error("************returning State********","DEBUG",h.procState)
+
 	return &drivers.TaskStatus{
 		ID:          h.taskConfig.ID,
 		Name:        h.taskConfig.Name,
-		State:       h.procState,
+		State:       h.State,
 		StartedAt:   h.startedAt,
 		CompletedAt: h.completedAt,
 		ExitResult:  h.exitResult,
@@ -49,7 +47,7 @@ func (h *taskHandle) TaskStatus() *drivers.TaskStatus {
 func (h *taskHandle) IsRunning() bool {
 	h.stateLock.RLock()
 	defer h.stateLock.RUnlock()
-	return h.procState == drivers.TaskStateRunning
+	return h.State == drivers.TaskStateRunning
 }
 
 func (h *taskHandle) run() {
@@ -58,11 +56,22 @@ func (h *taskHandle) run() {
 		h.exitResult = &drivers.ExitResult{}
 	}
 	h.stateLock.Unlock()
+	
+	containerName := fmt.Sprintf("%s-%s", h.taskConfig.Name,h.taskConfig.AllocID)
+	z := zconfig.New(containerName)
 
+	mgr, err := lifecycle.NewManager(z)
+	if err != nil {
+		return 
+	}
+	
+	for mgr.GetZoneState() == 86 {
+		time.Sleep(2 * time.Second)
+	}
 	h.stateLock.Lock()
 	defer h.stateLock.Unlock()
 
-	h.procState = drivers.TaskStateExited
+	h.State = drivers.TaskStateExited
 	h.exitResult.ExitCode = 0
 	h.exitResult.Signal = 0
 	h.completedAt = time.Now()
