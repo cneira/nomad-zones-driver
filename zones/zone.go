@@ -16,5 +16,4 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.Zonepath = fmt.Sprintf("%s/%s", taskConfig.Zonepath, containerName)
 
 	return z
-
 }

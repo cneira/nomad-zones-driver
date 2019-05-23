@@ -8,23 +8,29 @@ import (
 	"sync"
 	"time"
 
+	zconfig "git.wegmueller.it/illumos/go-zone/config"
+	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/plugins/drivers"
-	"git.wegmueller.it/illumos/go-zone/config"
-	"git.wegmueller.it/illumos/go-zone/lifecycle"
-	zconfig "git.wegmueller.it/illumos/go-zone/config"
+)
+
+const (
+	// containerMonitorIntv is the interval at which the driver checks if the
+	// container is still running
+
+	containerMonitorIntv = 2 * time.Second
+	zoneStateRunning     = 86
 )
 
 type taskHandle struct {
-	container *config.Zone
+	container zconfig.Zone
 	logger    hclog.Logger
-
 
 	// stateLock syncs access to all fields below
 	stateLock sync.RWMutex
 
 	taskConfig  *drivers.TaskConfig
-	State   drivers.TaskState
+	State       drivers.TaskState
 	startedAt   time.Time
 	completedAt time.Time
 	exitResult  *drivers.ExitResult
@@ -56,17 +62,16 @@ func (h *taskHandle) run() {
 		h.exitResult = &drivers.ExitResult{}
 	}
 	h.stateLock.Unlock()
-	
-	containerName := fmt.Sprintf("%s-%s", h.taskConfig.Name,h.taskConfig.AllocID)
-	z := zconfig.New(containerName)
 
+	containerName := fmt.Sprintf("%s-%s", h.taskConfig.Name, h.taskConfig.AllocID)
+	z := zconfig.New(containerName)
 	mgr, err := lifecycle.NewManager(z)
 	if err != nil {
-		return 
+		return
 	}
-	
-	for mgr.GetZoneState() == 86 {
-		time.Sleep(2 * time.Second)
+
+	for mgr.GetZoneState() == zoneStateRunning {
+		time.Sleep(containerMonitorIntv)
 	}
 	h.stateLock.Lock()
 	defer h.stateLock.Unlock()
@@ -78,6 +83,9 @@ func (h *taskHandle) run() {
 
 }
 
+/*
+ * TODO: add cpu + memory stats from container
+ */
 func (h *taskHandle) stats(ctx context.Context, interval time.Duration) (<-chan *drivers.TaskResourceUsage, error) {
 	return nil, nil
 }
@@ -98,7 +106,23 @@ func keysToVal(line string) (string, uint64, error) {
 }
 
 // shutdown shuts down the container, with `timeout` grace period
-// before killing the container with SIGKILL.
+// before shutdown a zone.
 func (h *taskHandle) shutdown(timeout time.Duration) error {
+	containerName := fmt.Sprintf("%s-%s", h.taskConfig.Name, h.taskConfig.AllocID)
+	z := zconfig.New(containerName)
+	z.Brand = h.container.Brand
+	z.Zonepath = h.container.Zonepath
+	mgr, err := lifecycle.NewManager(z)
+	if err != nil {
+		return err
+	}
+	if timeout != 0 {
+		time.Sleep(timeout)
+	}
+	
+	err= mgr.Shutdown(nil)
+	if err != nil {
+		return err
+	}
 	return nil
 }

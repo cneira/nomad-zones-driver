@@ -211,9 +211,9 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	}
 
 	h := &taskHandle{
-		container:  z,
+		container:  zconfig.Zone { Brand: z.Brand, Zonepath: z.Zonepath},
 		taskConfig: taskState.TaskConfig,
-		State:  drivers.TaskStateRunning,
+		State:      drivers.TaskStateRunning,
 		startedAt:  taskState.StartedAt,
 		exitResult: &drivers.ExitResult{},
 		logger:     d.logger,
@@ -261,9 +261,9 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	}
 
 	h := &taskHandle{
-		container:  z,
+		container:  zconfig.Zone {Brand: z.Brand, Zonepath: z.Zonepath},
 		taskConfig: cfg,
-		State:  drivers.TaskStateRunning,
+		State:      drivers.TaskStateRunning,
 		startedAt:  time.Now().Round(time.Millisecond),
 		logger:     d.logger,
 	}
