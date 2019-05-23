@@ -11,7 +11,16 @@ job "test-zone" {
 	config {
 		Zonepath = "/zcage/vms",
 		Autoboot = false,
-		Brand = "sparse"
+		Brand = "sparse",
+		CpuShares = 8000,
+		Memory = 4000,
+		Networks = [
+			 {
+			    Address = "192.168.1.120/24",
+			    Physical = "vnic0",
+			    Defrouter = "192.168.1.1"
+	             }
+	    ]
 	}
     }
  }

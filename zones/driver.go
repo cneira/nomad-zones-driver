@@ -42,6 +42,15 @@ var (
 		"Autoboot": hclspec.NewAttr("Autoboot", "string", false),
 		"Brand":    hclspec.NewAttr("Brand", "string", false),
 		"Zonepath": hclspec.NewAttr("Zonepath", "string", true),
+		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
+		"Memory": hclspec.NewAttr("Memory", "string", false),
+		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
+
+				"Address": hclspec.NewAttr("Address", "string", false),
+				"Physical": hclspec.NewAttr("Physical", "string", false),
+				"Defrouter": hclspec.NewAttr("Defrouter", "string", false),
+
+			})),
 	})
 
 	// capabilities is returned by the Capabilities RPC and indicates what
@@ -88,6 +97,9 @@ type TaskConfig struct {
 	Autoboot string `codec:"Autoboot"`
 	Brand    string `codec:"Brand"`
 	Zonepath string `codec:"Zonepath"`
+	Networks  []zconfig.Network `codec:"Networks"`
+	CpuShares string `codec:"CpuShares"`
+	Memory   string `codec:"Memory"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
