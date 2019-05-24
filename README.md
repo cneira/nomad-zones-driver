@@ -14,7 +14,7 @@ Requirements
 
 Job spec
 ---------
-
+```
 job "test-zone" {
   datacenters = ["dc1"]
   type        = "service"
@@ -33,10 +33,10 @@ job "test-zone" {
     }
  }
 }
-
-## Zonepath : a valid dataset where zones will be created.
-## Autoboot : the zone will be restarted at boot
-## Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
+```
+* Zonepath : a valid dataset where zones will be created.
+* Autoboot : the zone will be restarted at boot
+* Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
 
  TODO:
 -------
