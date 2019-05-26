@@ -1,4 +1,4 @@
-job "test-zone" {
+job "test-zone-props" {
   datacenters = ["dc1"]
   type        = "service"
   group "test" {
@@ -16,8 +16,8 @@ job "test-zone" {
 		Memory = 4000,
 		Networks = [
 			 {
-			    Address = "192.168.1.120/24",
 			    Physical = "vnic0",
+			    AllowedAddress = "192.168.1.120/24",
 			    Defrouter = "192.168.1.1"
 	             }
 	    ]

@@ -15,6 +15,7 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.Brand = taskConfig.Brand
 	z.Zonepath = fmt.Sprintf("%s/%s", taskConfig.Zonepath, containerName)
 	z.CpuShares = taskConfig.CpuShares
+	z.IpType = 2  
 	z.CappedMemory =
 		[]config.CappedMemory{{taskConfig.Memory,
 			taskConfig.Memory, taskConfig.Memory}}

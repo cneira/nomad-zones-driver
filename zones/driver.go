@@ -39,18 +39,17 @@ var (
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
 	taskConfigSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Autoboot": hclspec.NewAttr("Autoboot", "string", false),
-		"Brand":    hclspec.NewAttr("Brand", "string", false),
-		"Zonepath": hclspec.NewAttr("Zonepath", "string", true),
+		"Autoboot":  hclspec.NewAttr("Autoboot", "string", false),
+		"Brand":     hclspec.NewAttr("Brand", "string", false),
+		"Zonepath":  hclspec.NewAttr("Zonepath", "string", true),
 		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
-		"Memory": hclspec.NewAttr("Memory", "string", false),
+		"Memory":    hclspec.NewAttr("Memory", "string", false),
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
-
-				"Address": hclspec.NewAttr("Address", "string", false),
-				"Physical": hclspec.NewAttr("Physical", "string", false),
-				"Defrouter": hclspec.NewAttr("Defrouter", "string", false),
-
-			})),
+			"Address":        hclspec.NewAttr("Address", "string", false),
+			"Physical":       hclspec.NewAttr("Physical", "string", false),
+			"Defrouter":      hclspec.NewAttr("Defrouter", "string", false),
+			"AllowedAddress": hclspec.NewAttr("AllowedAddress", "string", false),
+		})),
 	})
 
 	// capabilities is returned by the Capabilities RPC and indicates what
@@ -94,12 +93,12 @@ type Config struct {
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Autoboot string `codec:"Autoboot"`
-	Brand    string `codec:"Brand"`
-	Zonepath string `codec:"Zonepath"`
+	Autoboot  string            `codec:"Autoboot"`
+	Brand     string            `codec:"Brand"`
+	Zonepath  string            `codec:"Zonepath"`
 	Networks  []zconfig.Network `codec:"Networks"`
-	CpuShares string `codec:"CpuShares"`
-	Memory   string `codec:"Memory"`
+	CpuShares string            `codec:"CpuShares"`
+	Memory    string            `codec:"Memory"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
@@ -223,7 +222,7 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	}
 
 	h := &taskHandle{
-		container:  zconfig.Zone { Brand: z.Brand, Zonepath: z.Zonepath},
+		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},
 		taskConfig: taskState.TaskConfig,
 		State:      drivers.TaskStateRunning,
 		startedAt:  taskState.StartedAt,
@@ -273,7 +272,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	}
 
 	h := &taskHandle{
-		container:  zconfig.Zone {Brand: z.Brand, Zonepath: z.Zonepath},
+		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},
 		taskConfig: cfg,
 		State:      drivers.TaskStateRunning,
 		startedAt:  time.Now().Round(time.Millisecond),
