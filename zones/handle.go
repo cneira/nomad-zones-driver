@@ -116,11 +116,11 @@ func (h *taskHandle) shutdown(timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
-	if timeout != 0 {
-		time.Sleep(timeout)
-	}
-	
-	err= mgr.Shutdown(nil)
+
+	time.Sleep(timeout)
+
+	err = mgr.Shutdown(nil)
+
 	if err != nil {
 		return err
 	}
