@@ -44,7 +44,7 @@ var (
 		"Zonepath":  hclspec.NewAttr("Zonepath", "string", true),
 		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
 		"Memory":    hclspec.NewAttr("Memory", "string", false),
-		"IpType":    hclspec.NewAttr("IpType", "string", false),
+		"Lwps":    hclspec.NewAttr("Lwps", "string", false),
 		
 		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Name":       hclspec.NewAttr("Name", "string", false),
@@ -106,7 +106,7 @@ type TaskConfig struct {
 	Networks  []zconfig.Network `codec:"Networks"`
 	CpuShares string            `codec:"CpuShares"`
 	Memory    string            `codec:"Memory"`
-	IpType    string            `codec:"IpType"`
+	Lwps      string            `codec:"Lwps"`
 	Attributes []zconfig.Attribute      `code:"Attributes"`
 }
 
