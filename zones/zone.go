@@ -17,7 +17,7 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.SetCPUShares(taskConfig.CpuShares)
 	z.IpType = 2  
 	z.CappedMemory = config.NewMemoryCap(taskConfig.Memory)
-//	z.Networks = taskConfig.Networks
+	z.Networks = taskConfig.Networks
 
 	return z
 }
