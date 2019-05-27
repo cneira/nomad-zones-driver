@@ -45,7 +45,12 @@ var (
 		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
 		"Memory":    hclspec.NewAttr("Memory", "string", false),
 		"IpType":    hclspec.NewAttr("IpType", "string", false),
-		"Resolvers": hclspec.NewAttr("Resolvers", "string", false),
+		
+		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
+			"Name":       hclspec.NewAttr("Name", "string", false),
+			"Type":       hclspec.NewAttr("Type", "string", false),
+			"Value":      hclspec.NewAttr("Value", "string", false),
+		})),
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Address": 	  hclspec.NewAttr("Address", "string", false),
 			"Physical":       hclspec.NewAttr("Physical", "string", false),
@@ -102,7 +107,7 @@ type TaskConfig struct {
 	CpuShares string            `codec:"CpuShares"`
 	Memory    string            `codec:"Memory"`
 	IpType    string            `codec:"IpType"`
-	Resolvers []string          `code:"Resolvers"`
+	Attributes []zconfig.Attribute      `code:"Attributes"`
 }
 
 // TaskState is the state which is encoded in the handle returned in

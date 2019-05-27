@@ -18,7 +18,7 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.IpType = convert_to_IpType(TaskConfig.IpType)
 	z.CappedMemory = config.NewMemoryCap(taskConfig.Memory)
 	z.Networks = taskConfig.Networks
-	z.Attributes = add_resolvers(taskConfig.Resolvers)
+	z.Attributes = taskConfig.Attributes
 	return z
 }
 
@@ -33,11 +33,4 @@ func convert_to_IpType(string iptype) IpType {
 		return  IpTypeExclusive
 
 	}
-}
-func add_resolvers ([]string resolvers) []Attribute {
-	var dns =  []Attribute{}
-	for _, rs := range resolvers {
-		dns = append(dns, rs)
-	} 
-	return dns
 }
