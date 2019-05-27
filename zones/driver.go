@@ -44,15 +44,15 @@ var (
 		"Zonepath":  hclspec.NewAttr("Zonepath", "string", true),
 		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
 		"Memory":    hclspec.NewAttr("Memory", "string", false),
-		"Lwps":    hclspec.NewAttr("Lwps", "string", false),
-		
+		"Lwps":      hclspec.NewAttr("Lwps", "string", false),
+
 		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
-			"Name":       hclspec.NewAttr("Name", "string", false),
-			"Type":       hclspec.NewAttr("Type", "string", false),
-			"Value":      hclspec.NewAttr("Value", "string", false),
+			"Name":  hclspec.NewAttr("Name", "string", false),
+			"Type":  hclspec.NewAttr("Type", "string", false),
+			"Value": hclspec.NewAttr("Value", "string", false),
 		})),
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
-			"Address": 	  hclspec.NewAttr("Address", "string", false),
+			"Address":        hclspec.NewAttr("Address", "string", false),
 			"Physical":       hclspec.NewAttr("Physical", "string", false),
 			"Defrouter":      hclspec.NewAttr("Defrouter", "string", false),
 			"AllowedAddress": hclspec.NewAttr("AllowedAddress", "string", false),
@@ -100,14 +100,14 @@ type Config struct {
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Autoboot  string            `codec:"Autoboot"`
-	Brand     string            `codec:"Brand"`
-	Zonepath  string            `codec:"Zonepath"`
-	Networks  []zconfig.Network `codec:"Networks"`
-	CpuShares string            `codec:"CpuShares"`
-	Memory    string            `codec:"Memory"`
-	Lwps      string            `codec:"Lwps"`
-	Attributes []zconfig.Attribute      `code:"Attributes"`
+	Autoboot   string              `codec:"Autoboot"`
+	Brand      string              `codec:"Brand"`
+	Zonepath   string              `codec:"Zonepath"`
+	Networks   []zconfig.Network   `codec:"Networks"`
+	CpuShares  string              `codec:"CpuShares"`
+	Memory     string              `codec:"Memory"`
+	Lwps       string              `codec:"Lwps"`
+	Attributes []zconfig.Attribute `code:"Attributes"`
 }
 
 // TaskState is the state which is encoded in the handle returned in

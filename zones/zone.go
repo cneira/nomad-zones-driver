@@ -2,16 +2,14 @@ package zone
 
 import (
 	"fmt"
-	"strings"
 
 	"git.wegmueller.it/illumos/go-zone/config"
 	"github.com/hashicorp/nomad/plugins/drivers"
 )
 
-
 const (
-        IpTypeShared    IpType = 1
-        IpTypeExclusive        = 2
+	IpTypeShared    = 1
+	IpTypeExclusive = 2
 )
 
 func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskConfig) *config.Zone {
