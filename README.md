@@ -11,8 +11,6 @@ Requirements
 - [Nomad](https://www.nomadproject.io/downloads.html) 0.9+
 - [Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
 - Illumos Omnios Host with pkgsrc and sparse zone brand packages installed.
-- Currently Nomad for Illumos is waiting for a couple of PRS to work, 
-   a working version for Omnios is [here](http://github.com/cneira/nomad-zones-driver/bin/nomad)
 - [Consul](https://releases.hashicorp.com/consul/1.5.1/consul_1.5.1_solaris_amd64.zip)   
 
 Job spec
