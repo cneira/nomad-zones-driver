@@ -1,4 +1,4 @@
-job "test-zone-props" {
+job "test-nomad-zone-driver" {
   datacenters = ["dc1"]
   type        = "service"
   group "test" {
@@ -14,6 +14,19 @@ job "test-zone-props" {
 		Brand = "sparse",
 		CpuShares = "8000",
 		Memory = "2G",
+	        Lwps = "3000",
+                Attributes = [ 
+				{ 
+ 				 Name = "resolvers", 
+			         Type = "string", 
+                                 Value = "8.8.8.8"
+				}, 
+				{ 
+ 				 Name = "resolvers", 
+			         Type = "string", 
+                                 Value = "8.8.8.5"
+				}, 
+                             ]
 		Networks = [
 			 {
 			    Physical = "vnic0",
