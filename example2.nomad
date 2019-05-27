@@ -12,8 +12,8 @@ job "test-zone-props" {
 		Zonepath = "/zcage/vms",
 		Autoboot = false,
 		Brand = "sparse",
-		CpuShares = 8000,
-		Memory = 4000,
+		CpuShares = "8000",
+		Memory = "2G",
 		Networks = [
 			 {
 			    Physical = "vnic0",
