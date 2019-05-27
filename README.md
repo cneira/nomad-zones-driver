@@ -62,7 +62,7 @@ job "test-nomad-zone-driver" {
 * Networks: Configure network for zone, if omitted no nic will be associated to the zone.
 * Memory : Maximum memory that the zone is allowed to use (in GB).
 * Lwps :   Maximum amount of lwps allowed.
-* Attributes: Attributes to add to zone.ZONECFG(1M)
+* Attributes: Attributes to add to zone [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg)
 
 
 USAGE:
@@ -70,13 +70,13 @@ USAGE:
 
 * Start [Consul](https://releases.hashicorp.com/consul/1.5.1/consul_1.5.1_solaris_amd64.zip)
 ```
-# screen consul agent -dev -bind 0.0.0.0 -client 0.0.0.0  
+cneira@Trixie:$  screen consul agent -dev -bind 0.0.0.0 -client 0.0.0.0  
 ```
 
-* Now start the nomad agent
+* Now start the nomad agent 
 
 ```
-# nomad agent -dev -config=config.hcl -data-dir=$GOPATH/src/github.com/hashicorp/nomad-zone-driver -plugin-dir=$GOPATH/src/github.com/hashicorp/nomad-zones-driver/plugin -bind=0.0.0.0 
+cneira@Trixie:$ pfexec nomad agent -dev -config=config.hcl -data-dir=$GOPATH/src/github.com/hashicorp/nomad-zone-driver -plugin-dir=$GOPATH/src/github.com/hashicorp/nomad-zones-driver/plugin -bind=0.0.0.0 
 ```
 
 * Finally submit a job 
@@ -122,9 +122,8 @@ Time                       Type        Description
 
 ```
 
-
  TODO:
 -------
 
 * Add brands LX and bhyve.
-* Add tests.
+* Test all zone properties.
