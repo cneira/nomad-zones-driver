@@ -16,25 +16,23 @@ job "test-nomad-zone-driver" {
 		Memory = "2G",
 	        Lwps = "3000",
                 Attributes = [ 
-				{ 
- 				 Name = "resolvers", 
-			         Type = "string", 
-                                 Value = "8.8.8.8"
-				}, 
-				{ 
- 				 Name = "resolvers", 
-			         Type = "string", 
-                                 Value = "8.8.8.5"
-				}, 
-                             ]
+			     { 
+ 			       Name = "resolvers", 
+			       Type = "string", 
+                               Value = "8.8.8.8"
+			     }, 
+			     { 
+ 			       Name = "resolvers", 
+			       Type = "string", 
+                               Value = "8.8.8.5"
+			     } ]
 		Networks = [
 			 {
 			    Physical = "vnic0",
 			    AllowedAddress = "192.168.1.120/24",
 			    Defrouter = "192.168.1.1"
-	             }
-	    ]
+	                 }  ]
 	}
     }
- }
+  }
 }
