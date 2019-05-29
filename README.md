@@ -13,8 +13,11 @@ Requirements
 - Illumos Omnios Host with pkgsrc and sparse zone brand packages installed.
 - [Consul](https://releases.hashicorp.com/consul/1.5.1/consul_1.5.1_solaris_amd64.zip)   
 
-Job spec
+Examples 
 ---------
+
+* sparse zone  
+
 ```
 job "test-nomad-zone-driver" {
   datacenters = ["dc1"]
@@ -61,16 +64,75 @@ job "test-nomad-zone-driver" {
     }
   }
 }
-
 ```
+* LX zone 
+```
+job "lx-test" {
+  datacenters = ["dc1"]
+  type        = "service"
+
+  group "test" {
+    restart {
+      attempts = 0
+      mode     = "fail"
+    }
+
+    task "test01" {
+      driver = "zone"
+
+      config {
+        Zonepath  = "/zcage/vms"
+        Autoboot  = false
+        Brand     = "lx"
+        CpuShares = "8000"
+        Memory    = "2G"
+        Lwps      = "3000"
+
+        Attributes = [
+          {
+            Name  = "resolvers"
+            Type  = "string"
+            Value = "8.8.8.8"
+          },
+          {
+            Name  = "resolvers"
+            Type  = "string"
+            Value = "8.8.8.4"
+          },
+          {
+            Name  = "img"
+            Type  = "string"
+            Value = "/zcage/images/19aa3328-0025-11e7-a19a-c39077bfd4cf.zss.gz"
+          },
+          {
+            Name  = "kernel-version"
+            Type  = "string"
+            Value = "3.16.0"
+          },
+       ]
+
+        Networks = [
+          {
+            Physical       = "vnic0"
+            AllowedAddress = "192.168.1.120/24"
+            Defrouter      = "192.168.1.1"
+          },
+        ]
+      }
+    }
+  }
+}
+
 * Zonepath : a valid dataset where zones will be created.
 * Autoboot : the zone will be restarted at boot
 * Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
 * Networks: Configure network for zone, if omitted no nic will be associated to the zone.
 * Memory : Maximum memory that the zone is allowed to use (in GB).
 * Lwps :   Maximum amount of lwps allowed.
-* Attributes: Attributes to add to zone [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg)
-
+* Attributes : custom attributes that will be added to the zone.
+* LX Attributes: 
+- img : path to the zss file that will be used to create the zone. 
+- kernel-version : will be used by programs that check kernel version.  
 
 USAGE:
 --------
@@ -132,5 +194,5 @@ Time                       Type        Description
  TODO:
 -------
 
-* Add brands LX and bhyve.
+* Add brands bhyve and kvm.
 * Test all zone properties.
