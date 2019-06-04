@@ -39,13 +39,21 @@ var (
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
 	taskConfigSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Autoboot":  hclspec.NewAttr("Autoboot", "string", false),
-		"Brand":     hclspec.NewAttr("Brand", "string", false),
 		"Zonepath":  hclspec.NewAttr("Zonepath", "string", true),
+		"HostId":  hclspec.NewAttr("HostId", "string", false),
+		"Autoboot":  hclspec.NewAttr("Autoboot", "string", false),
+		"SchedulingClass":  hclspec.NewAttr("SchedulingClass", "string", false),
+		"Brand":     hclspec.NewAttr("Brand", "string", false),
 		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
-		"Memory":    hclspec.NewAttr("Memory", "string", false),
+		"DedicatedCpu": hclspec.NewAttr("DedicatedCpu", "string", false),
+		"CappedMemory":    hclspec.NewAttr("CappedMemory", "string", false),
+		"LockedMemory":    hclspec.NewAttr("LockedMemory", "string", false),
+		"SwapMemory":    hclspec.NewAttr("SwapMemory", "string", false),
+		"ShmMemory":      hclspec.NewAttr("ShmMemory", "string", false),
+		"SemIds":      hclspec.NewAttr("SemIds", "string", false),
+		"MsgIds":      hclspec.NewAttr("MsgIds", "string", false),
+		"ShmIds":      hclspec.NewAttr("ShmIds", "string", false),
 		"Lwps":      hclspec.NewAttr("Lwps", "string", false),
-
 		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Name":  hclspec.NewAttr("Name", "string", false),
 			"Type":  hclspec.NewAttr("Type", "string", false),
@@ -54,7 +62,7 @@ var (
 		"FileSystems": hclspec.NewBlockList("FileSystems", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Dir":     hclspec.NewAttr("Dir", "string", false),
 			"Special": hclspec.NewAttr("Special", "string", false),
-			"Type": hclspec.NewAttr("Type", "string", false),
+			"Type":    hclspec.NewAttr("Type", "string", false),
 			"raw":     hclspec.NewAttr("raw", "string", false),
 			"Fsoption": hclspec.NewBlockList("Fsoption", hclspec.NewObject(map[string]*hclspec.Spec{
 				"Name": hclspec.NewAttr("Name", "string", false)})),
@@ -62,6 +70,7 @@ var (
 		"Devices": hclspec.NewBlockList("Devices", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Match": hclspec.NewAttr("Match", "string", false),
 		})),
+		"IpType": hclspec.NewAttr("IpType", "string", false),
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Address":        hclspec.NewAttr("Address", "string", false),
 			"Physical":       hclspec.NewAttr("Physical", "string", false),
@@ -111,16 +120,26 @@ type Config struct {
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Autoboot    string               `codec:"Autoboot"`
-	Brand       string               `codec:"Brand"`
-	Zonepath    string               `codec:"Zonepath"`
-	Networks    []zconfig.Network    `codec:"Networks"`
-	CpuShares   string               `codec:"CpuShares"`
-	Memory      string               `codec:"Memory"`
-	Lwps        string               `codec:"Lwps"`
-	Attributes  []zconfig.Attribute  `code:"Attributes"`
-	FileSystems []zconfig.FileSystem `code:"FileSystems"`
-	Devices     []zconfig.Device    `code:"Devices"`
+	Zonepath        string               `codec:"Zonepath"`
+	HostId          string               `code:"HostId"`
+	Brand           string               `codec:"Brand"`
+	Autoboot        string               `codec:"Autoboot"`
+	SchedulingClass string               `code:"SchedulingClass"`
+	CpuShares       string               `codec:"CpuShares"`
+	CappedMemory    string               `codec:"CappedMemory"`
+	LockedMemory    string               `codec:"LockedMemory"`
+	SwapMemory      string               `code:"SwapMemory"`
+	ShmMemory       string               `code:"ShmMemory"`
+	DedicatedCpu    string               `code:"DedicatedCpu"`
+	SemIds          string               `code:"SemIds"`
+	ShmIds          string               `code:"ShmIds"`
+	MsgIds          string               `code:"MsgIds"`
+	Lwps            string               `codec:"Lwps"`
+	IpType          string               `code:"IpType"`
+	Networks        []zconfig.Network    `codec:"Networks"`
+	Attributes      []zconfig.Attribute  `code:"Attributes"`
+	FileSystems     []zconfig.FileSystem `code:"FileSystems"`
+	Devices         []zconfig.Device     `code:"Devices"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
