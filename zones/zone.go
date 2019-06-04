@@ -13,7 +13,6 @@ const (
 )
 
 func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskConfig) *config.Zone {
-
 	containerName := fmt.Sprintf("%s-%s", cfg.Name, cfg.AllocID)
 	z := config.New(containerName)
 	z.Brand = taskConfig.Brand
@@ -22,6 +21,8 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.CappedMemory = config.NewMemoryCap(taskConfig.Memory)
 	z.Networks = taskConfig.Networks
 	z.Attributes = taskConfig.Attributes
+	z.Devices = taskConfig.Devices
+	z.FileSystems = taskConfig.FileSystems
 	z.IpType = IpTypeExclusive
 	z.SetMaxLwps(taskConfig.Lwps)
 	return z

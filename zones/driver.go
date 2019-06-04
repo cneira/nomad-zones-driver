@@ -51,6 +51,17 @@ var (
 			"Type":  hclspec.NewAttr("Type", "string", false),
 			"Value": hclspec.NewAttr("Value", "string", false),
 		})),
+		"FileSystems": hclspec.NewBlockList("FileSystems", hclspec.NewObject(map[string]*hclspec.Spec{
+			"Dir":     hclspec.NewAttr("Dir", "string", false),
+			"Special": hclspec.NewAttr("Special", "string", false),
+			"Type": hclspec.NewAttr("Type", "string", false),
+			"raw":     hclspec.NewAttr("raw", "string", false),
+			"Fsoption": hclspec.NewBlockList("Fsoption", hclspec.NewObject(map[string]*hclspec.Spec{
+				"Name": hclspec.NewAttr("Name", "string", false)})),
+		})),
+		"Devices": hclspec.NewBlockList("Devices", hclspec.NewObject(map[string]*hclspec.Spec{
+			"Match": hclspec.NewAttr("Match", "string", false),
+		})),
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Address":        hclspec.NewAttr("Address", "string", false),
 			"Physical":       hclspec.NewAttr("Physical", "string", false),
@@ -100,14 +111,16 @@ type Config struct {
 
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
-	Autoboot   string              `codec:"Autoboot"`
-	Brand      string              `codec:"Brand"`
-	Zonepath   string              `codec:"Zonepath"`
-	Networks   []zconfig.Network   `codec:"Networks"`
-	CpuShares  string              `codec:"CpuShares"`
-	Memory     string              `codec:"Memory"`
-	Lwps       string              `codec:"Lwps"`
-	Attributes []zconfig.Attribute `code:"Attributes"`
+	Autoboot    string               `codec:"Autoboot"`
+	Brand       string               `codec:"Brand"`
+	Zonepath    string               `codec:"Zonepath"`
+	Networks    []zconfig.Network    `codec:"Networks"`
+	CpuShares   string               `codec:"CpuShares"`
+	Memory      string               `codec:"Memory"`
+	Lwps        string               `codec:"Lwps"`
+	Attributes  []zconfig.Attribute  `code:"Attributes"`
+	FileSystems []zconfig.FileSystem `code:"FileSystems"`
+	Devices     []zconfig.Device    `code:"Devices"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
