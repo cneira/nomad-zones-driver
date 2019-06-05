@@ -38,9 +38,13 @@ job "test-nomad-zone-driver" {
         Autoboot  = false
         Brand     = "sparse"
         CpuShares = "8000"
-        Memory    = "2G"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
+	DedicatedCpu = "1"
         Lwps      = "3000"
-
+	IpType = "exclusive"
+	
         Attributes = [
           {
             Name  = "resolvers"
@@ -88,7 +92,9 @@ job "lx-test" {
         Autoboot  = false
         Brand     = "lx"
         CpuShares = "8000"
-        Memory    = "2G"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
         Lwps      = "3000"
 
         Attributes = [
@@ -148,8 +154,10 @@ job "bhyve-test" {
         Autoboot  = false
         Brand     = "bhyve"
         CpuShares = "8000"
-        Memory    = "2G"
         Lwps      = "3000"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
 
         Attributes = [
           {
