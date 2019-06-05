@@ -1,7 +1,7 @@
 Nomad Illumos Zones Driver
 ===========================
 
-Task driver for managing Illumos zones. 
+Task driver for [Illumos](https://illumos.org/) zones. 
 
 
 - Website: https://www.nomadproject.io
