@@ -199,19 +199,8 @@ job "bhyve-test" {
   }
 }
 ```
-Definitions:
-----------------
-  
-* Zonepath : a valid dataset where zones will be created.
-* Autoboot : the zone will be restarted at boot
-* Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
-* Networks: Configure network for zone, if omitted no nic will be associated to the zone.
-* Memory : Maximum memory that the zone is allowed to use (in GB).
-* Lwps :   Maximum amount of lwps allowed.
-* Attributes : custom attributes that will be added to the zone.
-* LX Attributes: 
-- img : path to the zss file that will be used to create the zone. 
-- kernel-version : will be used by programs that check kernel version.  
+Task driver zone config match ZONECFG(1M) options, except for "img" custom attribute that is needed
+for a lx branded zone, the "img" attribute should be a .zss.gz or tar.gz file.
 Check information on settings in ZONECFG(1M) man page.
 
 
