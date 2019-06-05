@@ -16,10 +16,10 @@ job "test-nomad-zone-driver" {
         Autoboot  = false
         Brand     = "sparse"
         CpuShares = "8000"
-//	CappedMemory = "4G"
-//	LockedMemory = "2G"
-//	SwapMemory = "4G"
-//	DedicatedCpu = "1"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
+	DedicatedCpu = "1"
         Lwps      = "3000"
 	IpType = "exclusive"
 	
