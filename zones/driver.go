@@ -39,21 +39,21 @@ var (
 	// taskConfigSpec is the hcl specification for the driver config section of
 	// a task within a job. It is returned in the TaskConfigSchema RPC
 	taskConfigSpec = hclspec.NewObject(map[string]*hclspec.Spec{
-		"Zonepath":  hclspec.NewAttr("Zonepath", "string", true),
-		"HostId":  hclspec.NewAttr("HostId", "string", false),
-		"Autoboot":  hclspec.NewAttr("Autoboot", "string", false),
-		"SchedulingClass":  hclspec.NewAttr("SchedulingClass", "string", false),
-		"Brand":     hclspec.NewAttr("Brand", "string", false),
-		"CpuShares": hclspec.NewAttr("CpuShares", "string", false),
-		"DedicatedCpu": hclspec.NewAttr("DedicatedCpu", "string", false),
+		"Zonepath":        hclspec.NewAttr("Zonepath", "string", true),
+		"HostId":          hclspec.NewAttr("HostId", "string", false),
+		"Autoboot":        hclspec.NewAttr("Autoboot", "string", false),
+		"SchedulingClass": hclspec.NewAttr("SchedulingClass", "string", false),
+		"Brand":           hclspec.NewAttr("Brand", "string", false),
+		"CpuShares":       hclspec.NewAttr("CpuShares", "string", false),
+		"DedicatedCpu":    hclspec.NewAttr("DedicatedCpu", "string", false),
 		"CappedMemory":    hclspec.NewAttr("CappedMemory", "string", false),
 		"LockedMemory":    hclspec.NewAttr("LockedMemory", "string", false),
-		"SwapMemory":    hclspec.NewAttr("SwapMemory", "string", false),
-		"ShmMemory":      hclspec.NewAttr("ShmMemory", "string", false),
-		"SemIds":      hclspec.NewAttr("SemIds", "string", false),
-		"MsgIds":      hclspec.NewAttr("MsgIds", "string", false),
-		"ShmIds":      hclspec.NewAttr("ShmIds", "string", false),
-		"Lwps":      hclspec.NewAttr("Lwps", "string", false),
+		"SwapMemory":      hclspec.NewAttr("SwapMemory", "string", false),
+		"ShmMemory":       hclspec.NewAttr("ShmMemory", "string", false),
+		"SemIds":          hclspec.NewAttr("SemIds", "string", false),
+		"MsgIds":          hclspec.NewAttr("MsgIds", "string", false),
+		"ShmIds":          hclspec.NewAttr("ShmIds", "string", false),
+		"Lwps":            hclspec.NewAttr("Lwps", "string", false),
 		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Name":  hclspec.NewAttr("Name", "string", false),
 			"Type":  hclspec.NewAttr("Type", "string", false),
@@ -304,6 +304,11 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err != nil {
 		return nil, nil, fmt.Errorf("Cannot create mgr %q", cfg.ID)
 	}
+
+	if err = mgr.Verify(); err != nil {
+		return nil, nil, fmt.Errorf("Error Verifying zone  %q, err= %+v", cfg.ID, err)
+	}
+
 	if err = mgr.Install(nil); err != nil {
 		return nil, nil, fmt.Errorf("Cannot install zone %q, err= %+v", cfg.ID, err)
 	}
