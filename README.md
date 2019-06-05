@@ -1,7 +1,7 @@
 Nomad Illumos Zones Driver
 ===========================
 
-Task driver for managing Illumos zones.
+Task driver for managing Illumos zones. 
 
 
 - Website: https://www.nomadproject.io
@@ -11,7 +11,7 @@ Requirements
 
 - [Nomad](https://www.nomadproject.io/downloads.html) 0.9+
 - [Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
-- Illumos Omnios Host with pkgsrc and sparse zone brand packages installed.
+- [OmniOS](https://omniosce.org/)
 - [Consul](https://releases.hashicorp.com/consul/1.5.1/consul_1.5.1_solaris_amd64.zip)   
 
 Examples 
@@ -199,7 +199,9 @@ job "bhyve-test" {
   }
 }
 ```
-
+Definitions:
+----------------
+  
 * Zonepath : a valid dataset where zones will be created.
 * Autoboot : the zone will be restarted at boot
 * Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
@@ -210,6 +212,7 @@ job "bhyve-test" {
 * LX Attributes: 
 - img : path to the zss file that will be used to create the zone. 
 - kernel-version : will be used by programs that check kernel version.  
+Check information on settings in ZONECFG(1M) man page.
 
 
 USAGE:
@@ -266,12 +269,11 @@ Time                       Type        Description
 2019-05-27T11:17:56-04:00  Started     Task started by client
 2019-05-27T11:15:15-04:00  Task Setup  Building Task Directory
 2019-05-27T11:15:15-04:00  Received    Task received by client
-
 ```
 
  TODO:
 -------
 
 * Implement exec interface
-* Validate input on hcl 
 * Test all zone properties.
+* Match naming convention between ZONECFG(1M) and nomad zone driver. 
