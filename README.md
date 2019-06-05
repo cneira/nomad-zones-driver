@@ -16,7 +16,6 @@ Requirements
 
 Examples 
 ---------
-* sparse zone: 
 
 [Omnios Operations: Simple Zone](https://omniosce.org/setup/firstzone.html)
 
@@ -67,7 +66,6 @@ job "test-nomad-zone-driver" {
   }
 }
 ```
-* LX branded zone: 
  
 [Omnios Operations: LX branded Zone](https://omniosce.org/info/lxzones.html)
   
@@ -127,8 +125,7 @@ job "lx-test" {
     }
   }
 }
-
-* Bhyve/KVM branded zone:
+```
   
 [Omnios Operations: BHYVE/KVM branded zone](https://omniosce.org/info/bhyve_kvm_brand.html)
 
@@ -203,7 +200,6 @@ job "bhyve-test" {
 }
 ```
 
-```
 * Zonepath : a valid dataset where zones will be created.
 * Autoboot : the zone will be restarted at boot
 * Brand :  zone type at this moment only  sparse, pkgsrc and lipkg work.
