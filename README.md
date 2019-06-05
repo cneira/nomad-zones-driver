@@ -1,6 +1,7 @@
 Nomad Illumos Zones Driver
 ===========================
-Task driver for managing Illumos zones
+
+Task driver for managing Illumos zones.
 
 
 - Website: https://www.nomadproject.io
@@ -15,10 +16,11 @@ Requirements
 
 Examples 
 ---------
+* sparse zone: 
 
-* sparse zone  
+[Omnios Operations: Simple Zone](https://omniosce.org/setup/firstzone.html)
 
-```
+```hcl
 job "test-nomad-zone-driver" {
   datacenters = ["dc1"]
   type        = "service"
@@ -65,8 +67,11 @@ job "test-nomad-zone-driver" {
   }
 }
 ```
-* LX zone 
-```
+* LX branded zone: 
+ 
+[Omnios Operations: LX branded Zone](https://omniosce.org/info/lxzones.html)
+  
+```hcl
 job "lx-test" {
   datacenters = ["dc1"]
   type        = "service"
@@ -122,6 +127,82 @@ job "lx-test" {
     }
   }
 }
+
+* Bhyve/KVM branded zone:
+  
+[Omnios Operations: BHYVE/KVM branded zone](https://omniosce.org/info/bhyve_kvm_brand.html)
+
+```hcl
+job "bhyve-test" {
+  datacenters = ["dc1"]
+  type        = "service"
+
+  group "test" {
+    restart {
+      attempts = 0
+      mode     = "fail"
+    }
+
+    task "test01" {
+      driver = "zone"
+
+      config {
+        Zonepath  = "/zcage/vms"
+        Autoboot  = false
+        Brand     = "bhyve"
+        CpuShares = "8000"
+        Memory    = "2G"
+        Lwps      = "3000"
+
+        Attributes = [
+          {
+            Name  = "bootdisk"
+            Type  = "string"
+            Value = "rpool/b0"
+          },
+          {
+            Name  = "cdrom"
+            Type  = "string"
+            Value = "/home/cneira/test.iso"
+          },
+        ]
+
+        FileSystems = [
+          {
+            Dir     = "/home/cneira/test.iso"
+            Special = "/home/cneira/test.iso"
+            Type    = "lofs"
+
+            Fsoption = [
+              {
+                Name = "ro"
+              },
+              {
+                Name = "nodevices"
+              },
+            ]
+          },
+        ]
+
+        Devices = [
+          {
+            Match = "/dev/zvol/rdsk/rpool/b0"
+          },
+        ]
+
+        Networks = [
+          {
+            Physical       = "vnic5"
+            AllowedAddress = "192.168.1.254/24"
+            Defrouter      = "192.168.1.1"
+          },
+        ]
+      }
+    }
+  }
+}
+```
+
 ```
 * Zonepath : a valid dataset where zones will be created.
 * Autoboot : the zone will be restarted at boot
@@ -133,6 +214,7 @@ job "lx-test" {
 * LX Attributes: 
 - img : path to the zss file that will be used to create the zone. 
 - kernel-version : will be used by programs that check kernel version.  
+
 
 USAGE:
 --------
@@ -194,5 +276,6 @@ Time                       Type        Description
  TODO:
 -------
 
-* Add brands bhyve and kvm.
+* Implement exec interface
+* Validate input on hcl 
 * Test all zone properties.
