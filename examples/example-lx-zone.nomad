@@ -16,7 +16,9 @@ job "lx-test" {
         Autoboot  = false
         Brand     = "lx"
         CpuShares = "8000"
-        Memory    = "2G"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
         Lwps      = "3000"
 
         Attributes = [

@@ -16,8 +16,10 @@ job "bhyve-test" {
         Autoboot  = false
         Brand     = "bhyve"
         CpuShares = "8000"
-        Memory    = "2G"
         Lwps      = "3000"
+	CappedMemory = "4G"
+	LockedMemory = "2G"
+	SwapMemory = "4G"
 
         Attributes = [
           {
