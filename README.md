@@ -199,9 +199,9 @@ job "bhyve-test" {
   }
 }
 ```
-Task driver zone config match ZONECFG(1M) options, except for "img" custom attribute that is needed
+Task driver zone config match [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg) options, except for "img" custom attribute that is needed
 for a lx branded zone, the "img" attribute should be a .zss.gz or tar.gz file.
-Check information on settings in ZONECFG(1M) man page.
+Check information on settings in [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg) man page.
 
 
 USAGE:
@@ -265,4 +265,4 @@ Time                       Type        Description
 
 * Implement exec interface
 * Test all zone properties.
-* Match naming convention between ZONECFG(1M) and nomad zone driver. 
+* Match naming convention between [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg) and nomad zone driver. 
