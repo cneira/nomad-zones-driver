@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"git.wegmueller.it/illumos/go-zone/config"
-	"github.com/hashicorp/nomad/plugins/drivers"
 	hclog "github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/nomad/plugins/drivers"
 	"io"
 	"net/http"
 	"os"
@@ -24,7 +24,7 @@ func simple_uuid() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error calling rand.Read")
 	}
-	uuid := fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 	return uuid, nil
 }
 
@@ -112,23 +112,23 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 
 	z.Devices = taskConfig.Devices
 	z.FileSystems = taskConfig.FileSystems
+	z.Attributes = taskConfig.Attributes
 
 	if len(taskConfig.Docker) != 0 {
 		s := strings.Split(taskConfig.Docker, "/")
-			d.logger.Info("Pulling image", "driver_initialize_container", hclog.Fmt("%v+", s))
+		d.logger.Info("Pulling image", "driver_initialize_container", hclog.Fmt("%v+", s))
 		uuid, _ := simple_uuid()
 		if len(s) > 1 {
 			library, tag := s[0], s[1]
 			path := "/tmp/" + library + "-" + tag + "-" + uuid + ".gz"
 			err := dockerpull(library, tag, path)
-			if err != nil {
+			if err == nil {
 				img := config.Attribute{Name: "img", Type: "string", Value: path}
 				z.Attributes = append(taskConfig.Attributes, img)
 			}
 		}
 	}
-
-	z.Attributes = taskConfig.Attributes
+	d.logger.Info("taskConfig.Attributes", "driver_initialize_container", hclog.Fmt("%v+",z.Attributes))
 
 	return z
 }

@@ -1,4 +1,4 @@
-job "lx-test" {
+job "docker-lx-test" {
   datacenters = ["dc1"]
   type        = "service"
 
