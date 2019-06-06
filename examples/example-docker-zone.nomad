@@ -15,7 +15,7 @@ job "docker-lx-test" {
         Zonepath  = "/zcage/vms"
         Autoboot  = false
         Brand     = "lx"
-	Docker = "ubuntu/latest"
+	Docker = "library/redis latest"
         CpuShares = "8000"
 	CappedMemory = "4G"
 	LockedMemory = "2G"
