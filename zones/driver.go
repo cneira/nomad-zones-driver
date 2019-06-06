@@ -47,6 +47,7 @@ var (
 		"CpuShares":       hclspec.NewAttr("CpuShares", "string", false),
 		"DedicatedCpu":    hclspec.NewAttr("DedicatedCpu", "string", false),
 		"CappedMemory":    hclspec.NewAttr("CappedMemory", "string", false),
+		"Docker":    hclspec.NewAttr("Docker", "string", false),
 		"LockedMemory":    hclspec.NewAttr("LockedMemory", "string", false),
 		"SwapMemory":      hclspec.NewAttr("SwapMemory", "string", false),
 		"ShmMemory":       hclspec.NewAttr("ShmMemory", "string", false),
@@ -123,6 +124,7 @@ type TaskConfig struct {
 	Zonepath        string               `codec:"Zonepath"`
 	HostId          string               `code:"HostId"`
 	Brand           string               `codec:"Brand"`
+	Docker          string               `code:"Docker"`
 	Autoboot        string               `codec:"Autoboot"`
 	SchedulingClass string               `code:"SchedulingClass"`
 	CpuShares       string               `codec:"CpuShares"`
