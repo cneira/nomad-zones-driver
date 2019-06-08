@@ -207,6 +207,7 @@ job "bhyve-test" {
   }
 }
 ```
+[Using a docker image from V2 registry ](https://hub.docker.com/r/beamdog/nwserver)
 ``` docker task
 job "docker-test" {
   datacenters = ["dc1"]
@@ -331,4 +332,3 @@ Time                       Type        Description
 * Implement exec interface
 * Test all zone properties.
 * Match naming convention between [ZONECFG(1M)](https://illumos.org/man/1m/zonecfg) and nomad zone driver. 
-* Missing layers on docker images
