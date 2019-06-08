@@ -208,7 +208,7 @@ job "bhyve-test" {
 }
 ```
 [Using a docker image from V2 registry ](https://hub.docker.com/r/beamdog/nwserver)
-``` docker task
+```hcl
 job "docker-test" {
   datacenters = ["dc1"]
   type        = "service"
