@@ -1,4 +1,4 @@
-Nomad Illumos Zones Task Driver
+Zones Task Driver
 ===========================
 
 Task driver for [Illumos](https://illumos.org/) zones. 
