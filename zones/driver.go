@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"git.wegmueller.it/illumos/go-zone"
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
-	"git.wegmueller.it/illumos/go-zone"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
 	"github.com/hashicorp/nomad/plugins/base"
@@ -319,28 +319,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err = mgr.Boot(nil); err != nil {
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
-       
-	var env string
-	var cmd string
-	var entry string 
 
-	val, err := mgr.GetAttribute("entrypoint")
-	if err == nil {
-		entry = string(val)	
-	}
- 
-	val, err = mgr.GetAttribute("cmd")
-	if err == nil {
-		cmd = string(val)	
-	}
-
-	val, err = mgr.GetAttribute("env")
-	if err == nil {
-		env = string(val)	
-	}
-	if err = zone.ExecuteInside(*z,"root","bash -c", env, entry,";",cmd); err != nil {
-	d.logger.Info("Running CMD, ENTRYPOINT, ENV", "driver_cfg", hclog.Fmt(cmd,entry,env))
-	} 
 
 	h := &taskHandle{
 		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},

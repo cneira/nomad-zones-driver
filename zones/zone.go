@@ -83,7 +83,6 @@ func docker_getconfig(library string, tag string) (map[string]string, error) {
 	var result3 map[string]interface{}
 	json.NewDecoder(resp2.Body).Decode(&result3)
 	container_config := result3["container_config"].(map[string]interface{})
-	cmds := container_config["Cmd"].([]interface{})
 
 	var execute []string
 	m := make(map[string]string)
@@ -93,25 +92,26 @@ func docker_getconfig(library string, tag string) (map[string]string, error) {
 		entrypoint := container_config["Entrypoint"].([]interface{})
 		entry := fmt.Sprintf("%s", entrypoint)
 		m["entrypoint"] = re.ReplaceAllString(entry, "")
-
 	}
 
-	env := container_config["Env"].([]interface{})
+	if container_config["Env"] != nil {
+		envi := container_config["Env"].([]interface{})
+		env := fmt.Sprintf("%s", envi)
+		m["env"] = re.ReplaceAllString(env, "")
+	}
 
 	if container_config["Cmd"] != nil {
+		cmds := container_config["Cmd"].([]interface{})
 		for _, v := range cmds {
 			if strings.Contains(v.(string), "CMD") {
 				execute = append(execute, v.(string))
 			}
 		}
+		cmdargs := strings.Join(execute, " ")
+		m["cmd"] = re.ReplaceAllString(cmdargs, "")
 	}
 
 	defer resp.Body.Close()
-	cmdargs := strings.Join(execute, " ")
-	environ := fmt.Sprintf("%s", env)
-	cmd := fmt.Sprintf("%s", cmdargs)
-	m["env"] = environ
-	m["cmd"] = cmd
 
 	return m, nil
 }
@@ -280,10 +280,6 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 
 			libtag := s[0]
 
-			d.logger.Info("driver_initialize_container", hclog.Fmt("library = %v+", library))
-			d.logger.Info("driver_initialize_container", hclog.Fmt("path = %v+", path))
-			d.logger.Info("driver_initialize_container", hclog.Fmt("libtag = %v+", libtag))
-
 			err := dockerpull(libtag, tag, path)
 
 			if err == nil {
@@ -298,11 +294,16 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 
 			if err == nil {
 				if val, ok := m["cmd"]; ok {
-					cmd := config.Attribute{Name: "Cmd", Type: "string", Value: string(val)}
+					cmd := config.Attribute{Name: "CMD", Type: "string", Value: string(val)}
 					z.Attributes = append(z.Attributes, cmd)
 				}
 				if val, ok := m["env"]; ok {
-					env := config.Attribute{Name: "Env", Type: "string", Value: string(val)}
+					env := config.Attribute{Name: "ENV", Type: "string", Value: string(val)}
+					z.Attributes = append(z.Attributes, env)
+				}
+
+				if val, ok := m["entrypoint"]; ok {
+					env := config.Attribute{Name: "ENTRYPOINT", Type: "string", Value: string(val)}
 					z.Attributes = append(z.Attributes, env)
 				}
 			}
