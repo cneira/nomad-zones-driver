@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -92,7 +92,7 @@ func docker_getconfig(library string, tag string) (map[string]string, error) {
 	if container_config["Entrypoint"] != nil {
 		entrypoint := container_config["Entrypoint"].([]interface{})
 		entry := fmt.Sprintf("%s", entrypoint)
-		m["entrypoint"] = re.ReplaceAllString(entry,"") 
+		m["entrypoint"] = re.ReplaceAllString(entry, "")
 
 	}
 
@@ -110,8 +110,8 @@ func docker_getconfig(library string, tag string) (map[string]string, error) {
 	cmdargs := strings.Join(execute, " ")
 	environ := fmt.Sprintf("%s", env)
 	cmd := fmt.Sprintf("%s", cmdargs)
-	m["env"] =  environ
-	m["cmd"] =  cmd
+	m["env"] = environ
+	m["cmd"] = cmd
 
 	return m, nil
 }
@@ -182,15 +182,13 @@ func dockerpull(library string, tag string, path string) error {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			return fmt.Errorf("Failed retrieving image blob: " + blob)
+			return fmt.Errorf("Failed retrieving image blob:%s err=%s ", blob, err)
 		}
-		defer resp.Body.Close()
 		// Create the file
 		out, err := os.Create("/tmp/" + blob + ".gz")
 		if err != nil {
-			return fmt.Errorf("Failed creating temporary image")
+			return fmt.Errorf("Failed creating temporary image: %s")
 		}
-		defer out.Close()
 
 		// Write the body to file
 		_, err = io.Copy(out, resp.Body)
@@ -201,24 +199,27 @@ func dockerpull(library string, tag string, path string) error {
 		}
 		args := []string{"xvfz", "/tmp/" + blob + ".gz", "-C", path}
 
-		if err := exec.Command("tar", args...).Run(); err != nil {
-			return fmt.Errorf("error running tar:", err, args)
+		if err := exec.Command("gtar", args...).Run(); err != nil {
+			return fmt.Errorf("error running gtar:%s", err, args)
 		}
 
 		cleanerr := os.Remove("/tmp/" + blob + ".gz")
 		if cleanerr != nil {
 			return fmt.Errorf("Failed cleaning up", cleanerr)
 		}
+
+		out.Close()
+		resp.Body.Close()
 	}
 	cargs := []string{"cvfz", path + ".tar.gz", "-C", path, "."}
-	if err := exec.Command("tar", cargs...).Run(); err != nil {
-		return  fmt.Errorf("error running compress:", err, cargs)
+	if err := exec.Command("gtar", cargs...).Run(); err != nil {
+		return fmt.Errorf("error running compress: %s:%s", err, cargs)
 	}
 
 	cleanerr := os.RemoveAll(path)
 
 	if cleanerr != nil {
-		return fmt.Errorf("Failed cleaning up image dir", cleanerr)
+		return fmt.Errorf("Failed cleaning up image dir %s", cleanerr)
 	}
 
 	return nil
