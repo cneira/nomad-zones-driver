@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"git.wegmueller.it/illumos/go-zone"
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
@@ -319,7 +318,6 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err = mgr.Boot(nil); err != nil {
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
-
 
 	h := &taskHandle{
 		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},

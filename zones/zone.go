@@ -107,8 +107,10 @@ func docker_getconfig(library string, tag string) (map[string]string, error) {
 				execute = append(execute, v.(string))
 			}
 		}
-		cmdargs := strings.Join(execute, " ")
-		m["cmd"] = re.ReplaceAllString(cmdargs, "")
+		if len(execute) > 0 {
+			cmdargs := strings.Join(execute, " ")
+			m["cmd"] = fmt.Sprintf("%s", re.ReplaceAllString(cmdargs, ""))
+		}
 	}
 
 	defer resp.Body.Close()
@@ -135,7 +137,7 @@ func RemoveDuplicatesFromSlice(s []string) []string {
 func dockerpull(library string, tag string, path string) error {
 	resp, err := http.Get("https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + library + ":pull")
 	if err != nil {
-		return fmt.Errorf("failed to get token")
+		return fmt.Errorf("failed to get token from docker registry")
 	}
 	defer resp.Body.Close()
 	var result map[string]interface{}
@@ -184,16 +186,14 @@ func dockerpull(library string, tag string, path string) error {
 		if err != nil {
 			return fmt.Errorf("Failed retrieving image blob:%s err=%s ", blob, err)
 		}
-		// Create the file
+
 		out, err := os.Create("/tmp/" + blob + ".gz")
 		if err != nil {
 			return fmt.Errorf("Failed creating temporary image: %s")
 		}
 
-		// Write the body to file
 		_, err = io.Copy(out, resp.Body)
 
-		// Create the actual image from layers
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			os.Mkdir(path, os.ModePerm)
 		}
