@@ -326,6 +326,9 @@ Time                       Type        Description
 2019-05-27T11:15:15-04:00  Received    Task received by client
 ```
 
+## Support
+It's also possible to support the project on [Patreon](https://www.patreon.com/neirac)
+
  TODO:
 -------
 
