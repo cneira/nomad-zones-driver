@@ -130,26 +130,26 @@ type Config struct {
 // TaskConfig is the driver configuration of a task within a job
 type TaskConfig struct {
 	Zonepath        string               `codec:"Zonepath"`
-	HostId          string               `code:"HostId"`
+	HostId          string               `codec:"HostId"`
 	Brand           string               `codec:"Brand"`
-	Docker          string               `code:"Docker"`
+	Docker          string               `codec:"Docker"`
 	Autoboot        string               `codec:"Autoboot"`
-	SchedulingClass string               `code:"SchedulingClass"`
+	SchedulingClass string               `codec:"SchedulingClass"`
 	CpuShares       string               `codec:"CpuShares"`
 	CappedMemory    string               `codec:"CappedMemory"`
 	LockedMemory    string               `codec:"LockedMemory"`
-	SwapMemory      string               `code:"SwapMemory"`
-	ShmMemory       string               `code:"ShmMemory"`
-	DedicatedCpu    string               `code:"DedicatedCpu"`
-	SemIds          string               `code:"SemIds"`
-	ShmIds          string               `code:"ShmIds"`
-	MsgIds          string               `code:"MsgIds"`
+	SwapMemory      string               `codec:"SwapMemory"`
+	ShmMemory       string               `codec:"ShmMemory"`
+	DedicatedCpu    string               `codec:"DedicatedCpu"`
+	SemIds          string               `codec:"SemIds"`
+	ShmIds          string               `codec:"ShmIds"`
+	MsgIds          string               `codec:"MsgIds"`
 	Lwps            string               `codec:"Lwps"`
-	IpType          string               `code:"IpType"`
+	IpType          string               `codec:"IpType"`
 	Networks        []zconfig.Network    `codec:"Networks"`
-	Attributes      []zconfig.Attribute  `code:"Attributes"`
-	FileSystems     []zconfig.FileSystem `code:"FileSystems"`
-	Devices         []zconfig.Device     `code:"Devices"`
+	Attributes      []zconfig.Attribute  `codec:"Attributes"`
+	FileSystems     []zconfig.FileSystem `codec:"FileSystems"`
+	Devices         []zconfig.Device     `codec:"Devices"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
