@@ -327,11 +327,10 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
 
-	docker, attrerr := mgr.GetAttribute("DOCKER")
+	entry, attrerr := mgr.GetAttribute("ENTRYPOINT")
 	if attrerr != nil {
-		d.logger.Info("Not a docker image", "starting container", hclog.Fmt("output=%+v err=%v", docker, attrerr))
+		d.logger.Info("Warning: zone does not have and entry point attribute", "starting container", hclog.Fmt("output=%+v err=%v", entry, attrerr))
 	} else {
-		entry, _ := mgr.GetAttribute("ENTRYPOINT")
 		cmd, _ := mgr.GetAttribute("CMD")
 		env, _ := mgr.GetAttribute("ENV")
 		zcmd := exec.Command("bash", "-c", "zlogin "+z.Name+" /usr/bin/env "+env+" "+entry+" "+cmd)
