@@ -5,7 +5,6 @@
  * Copyright (c) 2018, Carlos Neira cneirabustos@gmail.com
  */
 
-
 package zone
 
 import (
@@ -273,6 +272,9 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.Attributes = taskConfig.Attributes
 
 	if len(taskConfig.Docker) != 0 {
+
+		env := config.Attribute{Name: "DOCKER", Type: "string", Value: string(taskConfig.Docker)}
+		z.Attributes = append(z.Attributes, env)
 		s := strings.Split(taskConfig.Docker, " ")
 		d.logger.Info("Pulling image", "driver_initialize_container", hclog.Fmt("%v+", s))
 		uuid, _ := simple_uuid()

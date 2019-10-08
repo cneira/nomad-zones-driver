@@ -10,8 +10,8 @@ package zone
 import (
 	"context"
 	"fmt"
-	"time"
 	"os/exec"
+	"time"
 
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
@@ -327,16 +327,20 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
 
-	entry, _ := mgr.GetAttribute("ENTRYPOINT")
-	cmd, _ := mgr.GetAttribute("CMD")
-	env, _ := mgr.GetAttribute("ENV")
-
-	zcmd := exec.Command("bash" ,"-c", "zlogin " + z.Name + " /usr/bin/env " + env + " " + entry + " " + cmd)
-	zout, zerr := zcmd.CombinedOutput()
-	if zerr != nil {
-		return nil, nil, fmt.Errorf("Cannot run Entrypoint  out=%q, err= %+v", zout, zerr)
+	docker, attrerr := mgr.GetAttribute("DOCKER")
+	if attrerr != nil {
+		d.logger.Info("Not a docker image", "starting container", hclog.Fmt("output=%+v err=%v", docker, attrerr))
+	} else {
+		entry, _ := mgr.GetAttribute("ENTRYPOINT")
+		cmd, _ := mgr.GetAttribute("CMD")
+		env, _ := mgr.GetAttribute("ENV")
+		zcmd := exec.Command("bash", "-c", "zlogin "+z.Name+" /usr/bin/env "+env+" "+entry+" "+cmd)
+		zerr := zcmd.Start()
+		if zerr != nil {
+			return nil, nil, fmt.Errorf("Cannot run Entrypoint  out=%q, err= %+v", zerr)
+		}
+		d.logger.Info("Running Entrypoint", "docker startup", hclog.Fmt("entrypoint=%+v env=%v cmd=%v", entry, env, cmd))
 	}
-	d.logger.Info("Running Entrypoint", "docker startup", hclog.Fmt("output=%+v err=%v", zout, zerr))
 
 	h := &taskHandle{
 		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},
