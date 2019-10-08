@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad-zones-driver/zones"
+	"github.com/cneira/nomad-zones-driver/zones"
 	"github.com/hashicorp/nomad/plugins"
 )
 

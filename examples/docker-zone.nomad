@@ -1,4 +1,4 @@
-job "docker-lx-test" {
+job "docker-lx-test5" {
   datacenters = ["dc1"]
   type        = "service"
 
@@ -12,10 +12,10 @@ job "docker-lx-test" {
       driver = "zone"
 
       config {
-        Zonepath  = "/zcage/vms"
+        Zonepath  = "/vms"
         Autoboot  = false
         Brand     = "lx"
-	Docker = "beamdog/nwserver latest"
+	Docker = "gitea/gitea latest"
         CpuShares = "8000"
 	CappedMemory = "4G"
 	LockedMemory = "2G"

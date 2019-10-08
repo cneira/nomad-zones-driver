@@ -5,13 +5,13 @@
  * Copyright (c) 2018, Carlos Neira cneirabustos@gmail.com
  */
 
-
 package zone
 
 import (
 	"context"
 	"fmt"
 	"time"
+	"os/exec"
 
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
@@ -310,7 +310,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		z.RemoveFile()
 		return nil, nil, fmt.Errorf("Cannot Register %q, err=%+v", cfg.ID, err)
 	}
-	mgr, err := lifecycle.NewManager(z)
+	mgr, err := lifecycle.OpenZoneConfig(z.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Cannot create mgr %q", cfg.ID)
 	}
@@ -326,6 +326,17 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if err = mgr.Boot(nil); err != nil {
 		return nil, nil, fmt.Errorf("Cannot boot zone %q, err= %+v", cfg.ID, err)
 	}
+
+	entry, _ := mgr.GetAttribute("ENTRYPOINT")
+	cmd, _ := mgr.GetAttribute("CMD")
+	env, _ := mgr.GetAttribute("ENV")
+
+	zcmd := exec.Command("bash" ,"-c", "zlogin " + z.Name + " /usr/bin/env " + env + " " + entry + " " + cmd)
+	zout, zerr := zcmd.CombinedOutput()
+	if zerr != nil {
+		return nil, nil, fmt.Errorf("Cannot run Entrypoint  out=%q, err= %+v", zout, zerr)
+	}
+	d.logger.Info("Running Entrypoint", "docker startup", hclog.Fmt("output=%+v err=%v", zout, zerr))
 
 	h := &taskHandle{
 		container:  zconfig.Zone{Brand: z.Brand, Zonepath: z.Zonepath},
