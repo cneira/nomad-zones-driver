@@ -145,26 +145,33 @@ func RemoveDuplicatesFromSlice(s []string) []string {
 func dockerpull(library string, tag string, path string) error {
 	resp, err := http.Get("https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + library + ":pull")
 	if err != nil {
-		return fmt.Errorf("failed to get token from docker registry")
+		return fmt.Errorf("failed to get token from docker registry: %s", err)
 	}
 	defer resp.Body.Close()
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("could not decode response from registry: %s", err)	
+	}
 	token := result["token"].(string)
 
-	req, err2 := http.NewRequest("GET", "https://registry-1.docker.io/v2/"+library+"/manifests/"+tag, nil)
+	req, manifestErr := http.NewRequest("GET", "https://registry-1.docker.io/v2/"+library+"/manifests/"+tag, nil)
+	if err != nil {
+		return fmt.Errorf("could not build request to get manifest: %s", err)	
+	}
 	req.Header.Add("Accept", "application/vnd.docker.distribution.manifest.v2+json")
 	req.Header.Add("Authorization", "Bearer "+string(token))
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
 	resp, err2 = client.Do(req)
 	if err2 != nil {
-		return fmt.Errorf("Failed retrieving blobs")
+		return fmt.Errorf("Failed retrieving manifest: %s", err)
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("Failed retrieving blobs")
+		return fmt.Errorf("Failed to read manifest: %s", err)
 	}
 
 	defer resp.Body.Close()
@@ -183,13 +190,16 @@ func dockerpull(library string, tag string, path string) error {
 		}
 	}
 
+	//This should not be necessary acording to the OCI standards 
 	dedupblobs := RemoveDuplicatesFromSlice(gzblobs)
 
 	for _, blob := range dedupblobs {
 		url := "https://registry-1.docker.io/v2/" + library + "/blobs/" + blob
 		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return fmt.Errorf("could not make request to get blob:%s err=%s", blob, err)	
+		}
 		req.Header.Add("Authorization", "Bearer "+string(token))
-		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			return fmt.Errorf("Failed retrieving image blob:%s err=%s ", blob, err)
@@ -201,6 +211,9 @@ func dockerpull(library string, tag string, path string) error {
 		}
 
 		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			return fmt.Errorf("could read body for blob:%s err=%s", blob, err)	
+		}
 
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			os.Mkdir(path, os.ModePerm)
@@ -216,6 +229,7 @@ func dockerpull(library string, tag string, path string) error {
 			return fmt.Errorf("Failed cleaning up", cleanerr)
 		}
 
+		//TODO move to seperate function or closure so defer works resource leak in error case
 		out.Close()
 		resp.Body.Close()
 	}
@@ -224,9 +238,7 @@ func dockerpull(library string, tag string, path string) error {
 		return fmt.Errorf("error running compress: %s:%s", err, cargs)
 	}
 
-	cleanerr := os.RemoveAll(path)
-
-	if cleanerr != nil {
+	if err := os.RemoveAll(path); err != nil {
 		return fmt.Errorf("Failed cleaning up image dir %s", cleanerr)
 	}
 
