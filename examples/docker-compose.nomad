@@ -1,4 +1,4 @@
-job "wordpress-blog" {
+job "blog" {
   datacenters = ["dc1"]
   type        = "service"
 
@@ -41,7 +41,15 @@ job "wordpress-blog" {
           },
         ]
 
-         Networks = [
+        FileSystems = [
+          {
+            Dir     = "/var/lib/mysql"
+            Special = "/home/cneira/docker/volumes/mysql"
+            Type    = "lofs"
+          },
+        ]
+
+        Networks = [
           {
             Physical       = "vnic2"
             AllowedAddress = "192.168.1.120/24"
@@ -84,7 +92,15 @@ job "wordpress-blog" {
           },
         ]
 
-         Networks = [
+        FileSystems = [
+          {
+            Dir     = "/var/www/html/wp-content"
+            Special = "/home/cneira/docker/volumes/wpress/wp-content"
+            Type    = "lofs"
+          },
+        ]
+
+        Networks = [
           {
             Physical       = "vnic1"
             AllowedAddress = "192.168.1.121/24"
