@@ -1,4 +1,4 @@
-job "docker-lx-test6" {
+job "blog" {
   datacenters = ["dc1"]
   type        = "service"
 
@@ -8,19 +8,20 @@ job "docker-lx-test6" {
       mode     = "fail"
     }
 
-    task "test01" {
+    task "wordpress" {
       driver = "zone"
+
       config {
-        Zonepath  = "/vms"
-        Autoboot  = false
-        Brand     = "lx"
-	Envars    = "MYSQL_ROOT_PASSWORD=somepassword  MYSQL_DATABASE=yourdb"
-	Docker = "mysql 5.7"
-        CpuShares = "8000"
-	CappedMemory = "4G"
-	LockedMemory = "2G"
-	SwapMemory = "4G"
-        Lwps      = "3000"
+        Zonepath     = "/zcage/vms"
+        Autoboot     = false
+        Brand        = "lx"
+        Envars       = "WORDPRESS_DB_PASSWORD=yourdb"
+        Docker       = "wordpress php7.3-fpm-alpine"
+        CpuShares    = "8000"
+        CappedMemory = "4G"
+        LockedMemory = "2G"
+        SwapMemory   = "4G"
+        Lwps         = "3000"
 
         Attributes = [
           {
@@ -33,24 +34,25 @@ job "docker-lx-test6" {
             Type  = "string"
             Value = "8.8.8.4"
           },
-         {
+          {
             Name  = "kernel-version"
             Type  = "string"
             Value = "3.16.0"
           },
-       ]
- FileSystems = [
+        ]
+
+        FileSystems = [
           {
-            Dir     = "/var/lib/mysql"
-            Special = "/home/cneira/docker/volumes/mysql"
+            Dir     = "/var/www/html/wp-content"
+            Special = "/home/cneira/docker/volumes/wpress/wp-content"
             Type    = "lofs"
-         },
+          },
         ]
 
         Networks = [
           {
-            Physical       = "vnic2"
-            AllowedAddress = "192.168.1.120/24"
+            Physical       = "vnic1"
+            AllowedAddress = "192.168.1.121/24"
             Defrouter      = "192.168.1.1"
           },
         ]

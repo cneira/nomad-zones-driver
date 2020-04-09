@@ -63,6 +63,7 @@ var (
 		"MsgIds":          hclspec.NewAttr("MsgIds", "string", false),
 		"ShmIds":          hclspec.NewAttr("ShmIds", "string", false),
 		"Lwps":            hclspec.NewAttr("Lwps", "string", false),
+		"Envars":          hclspec.NewAttr("Envars", "string", false),
 		"Attributes": hclspec.NewBlockList("Attributes", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Name":  hclspec.NewAttr("Name", "string", false),
 			"Type":  hclspec.NewAttr("Type", "string", false),
@@ -145,6 +146,7 @@ type TaskConfig struct {
 	ShmIds          string               `codec:"ShmIds"`
 	MsgIds          string               `codec:"MsgIds"`
 	Lwps            string               `codec:"Lwps"`
+	Envars          string               `codec:"Envars"`
 	IpType          string               `codec:"IpType"`
 	Networks        []zconfig.Network    `codec:"Networks"`
 	Attributes      []zconfig.Attribute  `codec:"Attributes"`
@@ -333,12 +335,13 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	} else {
 		cmd, _ := mgr.GetAttribute("CMD")
 		env, _ := mgr.GetAttribute("ENV")
-		zcmd := exec.Command("bash", "-c", "zlogin "+z.Name+" /usr/bin/env "+env+" "+entry+" "+cmd)
+		envars, _ := mgr.GetAttribute("ENVARS")
+		zcmd := exec.Command("bash", "-c", "zlogin "+z.Name+" /usr/bin/env "+" "+envars+" "+env+" "+entry+" "+cmd)
 		zerr := zcmd.Start()
 		if zerr != nil {
 			return nil, nil, fmt.Errorf("Cannot run Entrypoint  out=%q, err= %+v", zerr)
 		}
-		d.logger.Info("Running Entrypoint", "docker startup", hclog.Fmt("entrypoint=%+v env=%v cmd=%v", entry, env, cmd))
+		d.logger.Info("Running Entrypoint", "docker startup", hclog.Fmt("entrypoint=%+v env=%v cmd=%v envars=%v", entry, env, cmd, envars))
 	}
 
 	h := &taskHandle{

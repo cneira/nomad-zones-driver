@@ -1,4 +1,4 @@
-job "docker-lx-test6" {
+job "gitea" {
   datacenters = ["dc1"]
   type        = "service"
 
@@ -10,12 +10,12 @@ job "docker-lx-test6" {
 
     task "test01" {
       driver = "zone"
+
       config {
-        Zonepath  = "/vms"
+        Zonepath  = "/zcage/vms"
         Autoboot  = false
         Brand     = "lx"
-	Envars    = "MYSQL_ROOT_PASSWORD=somepassword  MYSQL_DATABASE=yourdb"
-	Docker = "mysql 5.7"
+	Docker = "gitea/gitea latest"
         CpuShares = "8000"
 	CappedMemory = "4G"
 	LockedMemory = "2G"
@@ -39,17 +39,10 @@ job "docker-lx-test6" {
             Value = "3.16.0"
           },
        ]
- FileSystems = [
-          {
-            Dir     = "/var/lib/mysql"
-            Special = "/home/cneira/docker/volumes/mysql"
-            Type    = "lofs"
-         },
-        ]
 
         Networks = [
           {
-            Physical       = "vnic2"
+            Physical       = "vnic0"
             AllowedAddress = "192.168.1.120/24"
             Defrouter      = "192.168.1.1"
           },

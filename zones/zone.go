@@ -271,6 +271,12 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 	z.FileSystems = taskConfig.FileSystems
 	z.Attributes = taskConfig.Attributes
 
+	if len(taskConfig.Envars) != 0 {
+		envars := config.Attribute{Name: "ENVARS", Type: "string", Value: string(taskConfig.Envars)}
+		z.Attributes = append(z.Attributes, envars)
+		d.logger.Info("driver_initialize_container", "Adding Envars", hclog.Fmt("%v+", z.Attributes))
+	}
+
 	if len(taskConfig.Docker) != 0 {
 
 		env := config.Attribute{Name: "DOCKER", Type: "string", Value: string(taskConfig.Docker)}
@@ -281,14 +287,17 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 		if len(s) > 1 {
 			library, tag := s[0], s[1]
 			name := strings.Split(library, "/")
+			var libtag string
 
 			if len(name) > 1 {
 				library = name[1]
+				libtag = s[0]
+			} else {
+				libtag = "library/" + s[0]
+
 			}
 
 			path := "/tmp/" + library + "-" + tag + "-" + uuid
-
-			libtag := s[0]
 
 			err := dockerpull(libtag, tag, path)
 
@@ -317,6 +326,9 @@ func (d *Driver) initializeContainer(cfg *drivers.TaskConfig, taskConfig TaskCon
 					z.Attributes = append(z.Attributes, env)
 				}
 			}
+		} else {
+
+			d.logger.Info("Docker Registry Error check Docker value", "driver_initialize_container", hclog.Fmt("%v+", string(taskConfig.Docker)))
 		}
 	}
 	d.logger.Info("taskConfig.Attributes", "driver_initialize_container", hclog.Fmt("%v+", z.Attributes))
