@@ -38,7 +38,8 @@ job "test-nomad-zone-driver" {
 
         Networks = [
           {
-            Physical       = "vnic0"
+            Physical       = "net_0"
+	    GlobalNic = "auto"
             AllowedAddress = "192.168.1.120/24"
             Defrouter      = "192.168.1.1"
           },
