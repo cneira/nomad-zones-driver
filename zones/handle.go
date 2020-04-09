@@ -10,17 +10,17 @@ package zone
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"os/exec"
 
-	"github.com/ztrue/tracerr"
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/plugins/drivers"
+	"github.com/ztrue/tracerr"
 )
 
 const (
@@ -133,6 +133,16 @@ func (h *taskHandle) shutdown(timeout time.Duration) error {
 
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return tracerr.Wrap(fmt.Errorf("failed to run zoneadm -z %s shutdown: %s", containerName, out))
+		}
+		// Delete docker jobs instead of job stopping them
+		docker, _ := mgr.GetAttribute("DOCKER")
+		if len(docker) > 1 {
+
+		}
+		cmd = exec.Command("zonecfg", "-z", containerName, "delete -F")
+
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return tracerr.Wrap(fmt.Errorf("failed to run zonecfg -z %s delete: %s", containerName, out))
 		}
 
 		return nil
