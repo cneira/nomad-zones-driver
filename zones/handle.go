@@ -5,7 +5,6 @@
  * Copyright (c) 2018, Carlos Neira cneirabustos@gmail.com
  */
 
-
 package zone
 
 import (
@@ -15,7 +14,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"os/exec"
 
+	"github.com/ztrue/tracerr"
 	zconfig "git.wegmueller.it/illumos/go-zone/config"
 	"git.wegmueller.it/illumos/go-zone/lifecycle"
 	hclog "github.com/hashicorp/go-hclog"
@@ -126,11 +127,23 @@ func (h *taskHandle) shutdown(timeout time.Duration) error {
 	}
 
 	time.Sleep(timeout)
+	if z.Brand == "lx" {
+		var cmd *exec.Cmd
+		cmd = exec.Command("zoneadm", "-z", containerName, "halt")
 
-	err = mgr.Shutdown(nil)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return tracerr.Wrap(fmt.Errorf("failed to run zoneadm -z %s shutdown: %s", containerName, out))
+		}
 
-	if err != nil {
-		return err
+		return nil
+
+	} else {
+		err = mgr.Shutdown(nil)
+
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
