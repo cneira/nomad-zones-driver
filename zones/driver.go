@@ -84,6 +84,7 @@ var (
 		"Networks": hclspec.NewBlockList("Networks", hclspec.NewObject(map[string]*hclspec.Spec{
 			"Address":        hclspec.NewAttr("Address", "string", false),
 			"Physical":       hclspec.NewAttr("Physical", "string", false),
+			"GlobalNic":       hclspec.NewAttr("GlobalNic", "string", false),
 			"Defrouter":      hclspec.NewAttr("Defrouter", "string", false),
 			"AllowedAddress": hclspec.NewAttr("AllowedAddress", "string", false),
 		})),
