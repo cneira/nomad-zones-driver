@@ -19,8 +19,6 @@ import (
 	"strings"
 )
 
-
-
 func docker_getconfig(library string, tag string) (map[string]string, error) {
 	respo, erro := http.Get("https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + library + ":pull&service=registry.docker.io")
 	if erro != nil {
@@ -214,5 +212,3 @@ func dockerpull(library string, tag string, path string) error {
 
 	return nil
 }
-
-
